@@ -65,6 +65,25 @@
   </main>
 
   <script type="module">
+    // Chrome/WebUSB compatibility shim: some Chrome builds accept only a real
+    // ArrayBuffer in USBDevice.transferOut(), while the ADB library writes
+    // Uint8Array / other ArrayBufferView values. Copy views into a plain
+    // ArrayBuffer before forwarding them to WebUSB.
+    if (typeof USBDevice !== "undefined") {
+      const nativeTransferOut = USBDevice.prototype.transferOut;
+      if (nativeTransferOut && !USBDevice.prototype.__z3r0TransferOutPatched) {
+        USBDevice.prototype.transferOut = function(endpointNumber, data) {
+          if (ArrayBuffer.isView(data)) {
+            const copy = new Uint8Array(data.byteLength);
+            copy.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+            data = copy.buffer;
+          }
+          return nativeTransferOut.call(this, endpointNumber, data);
+        };
+        Object.defineProperty(USBDevice.prototype, "__z3r0TransferOutPatched", { value: true });
+      }
+    }
+
     import { Adb, AdbDaemonTransport } from "https://esm.sh/@yume-chan/adb@2.0.0";
     import AdbWebCredentialStore from "https://esm.sh/@yume-chan/adb-credential-web@2.0.0";
     import { AdbDaemonWebUsbDeviceManager } from "https://esm.sh/@yume-chan/adb-daemon-webusb@2.0.0";
