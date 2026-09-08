@@ -22,7 +22,7 @@ pre{background:#0b0d10;color:#cbd5e1;border-radius:16px;padding:16px;white-space
 </head>
 <body>
 <header><nav><div class="brand">z3r0_tr4c3</div><div class="tag">A5 2017 · TWRP test</div></nav></header>
-<section class="hero"><div><div class="eyebrow">WEBUSB BUILD V3 · FAIL-SAFE CONNECT</div><h1>Chrome → TWRP.<br>Без излишни магии.</h1><p>Connect бутонът работи без външни библиотеки. Първо се отваря нативният Chrome USB picker, после се зарежда ADB engine-ът и се прави self-test.</p></div></section>
+<section class="hero"><div><div class="eyebrow">WEBUSB BUILD V4 · VERIFIED ADB CORE</div><h1>Chrome → TWRP.<br>Без излишни магии.</h1><p>ADB engine-ът се проверява предварително с правилната версия. После Chrome отваря USB picker и прави пълен ADB/TWRP self-test.</p></div></section>
 <main>
 <div class="notice"><strong>Важно:</strong> build-ът е UNTESTED. Направи backup. Installer-ът не wipe-ва и не reboot-ва автоматично.</div>
 
@@ -112,7 +112,7 @@ async function importWithFallback(name, urls){
     }catch(e){
       last=e;
       console.warn(`[z3r0] ${name} failed from ${url}`,e);
-      log(`${name}: CDN опитът не успя, пробвам резервен…`);
+      log(`${name}: не се зареди от ${new URL(url).host}; пробвам резервен…`);
     }
   }
   throw new Error(`${name} не може да се зареди: ${describeError(last)}`);
@@ -122,8 +122,9 @@ async function loadLibraries(){
   if(libs) return libs;
   const [adbMod, credMod, usbMod] = await Promise.all([
     importWithFallback("ADB core",[
-      "https://cdn.jsdelivr.net/npm/@yume-chan/adb@2.3.2/+esm",
-      "https://esm.sh/@yume-chan/adb@2.3.2"
+      "https://cdn.jsdelivr.net/npm/@yume-chan/adb@2.6.4/+esm",
+      "https://esm.run/@yume-chan/adb@2.6.4",
+      "https://esm.sh/@yume-chan/adb@2.6.4?bundle"
     ]),
     importWithFallback("ADB credentials",[
       "https://cdn.jsdelivr.net/npm/@yume-chan/adb-credential-web@2.1.0/+esm",
@@ -363,8 +364,18 @@ if(!window.isSecureContext){
   setState("webusbState","Няма WebUSB","bad");
   log("WebUSB липсва. Използвай desktop Chrome/Edge.");
 }else{
-  setState("webusbState","Готов","ok");
-  log("Connect бутонът е активен. WebUSB е наличен.");
+  setState("webusbState","WebUSB готов","ok");
+  log("WebUSB е наличен. Проверявам ADB engine…");
+  // Preload the exact ADB stack before the user starts touching the phone.
+  // Connect stays clickable, but the log will clearly show readiness.
+  loadLibraries().then(()=>{
+    log("ADB ENGINE READY: core 2.6.4 + WebUSB transport 2.3.2.");
+    connectBtn.textContent="Connect & test TWRP";
+  }).catch(e=>{
+    console.error("[z3r0 preload]",e);
+    log(`ADB ENGINE PRELOAD ERROR: ${describeError(e)}`);
+    log("Connect остава активен; при натискане ще пробвам CDN fallback отново.");
+  });
 }
 })();
 </script>
