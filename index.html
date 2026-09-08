@@ -3,146 +3,190 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b0c10" />
-  <meta name="description" content="z3r0_tr4c3 secure web installer" />
-  <title>z3r0_tr4c3 — Web Installer</title>
+  <meta name="theme-color" content="#07090d" />
+  <meta name="description" content="z3r0_tr4c3 secure Android web installer" />
+  <title>z3r0_tr4c3 — Secure Android</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="shell nav">
       <a class="wordmark" href="#top" aria-label="z3r0_tr4c3 home">
-        <span class="mark">z3</span>
+        <span class="wordmark-dot" aria-hidden="true"></span>
         <span>z3r0_tr4c3</span>
       </a>
       <nav class="nav-links" aria-label="Main navigation">
-        <a href="#install">Installer</a>
+        <a href="#overview">Overview</a>
+        <a href="#install">Install</a>
         <a href="#devices">Devices</a>
       </nav>
-      <span id="browserBadge" class="badge neutral">checking browser…</span>
+      <span id="browserBadge" class="badge neutral">Checking WebUSB…</span>
     </div>
   </header>
 
   <main id="top">
-    <section class="shell hero reveal">
-      <div class="hero-copy">
-        <p class="kicker">SECURE ANDROID, REBUILT</p>
-        <h1>Give good hardware<br><span>a second life.</span></h1>
-        <p class="lead">
-          Install verified z3r0_tr4c3 builds directly from your browser.
-          The installer checks the device, release and package before anything sensitive happens.
+    <section class="hero shell">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">PRIVACY-FOCUSED ANDROID</p>
+        <h1>Secure Android.<br><span>For hardware that still matters.</span></h1>
+        <p class="hero-lead">
+          z3r0_tr4c3 is built to give capable phones a secure second life with verified releases,
+          hardware-backed security where available, and a simple browser-based installer.
         </p>
         <div class="hero-actions">
-          <a class="button primary" href="#install">Open installer</a>
-          <span class="quiet">WebUSB · signed releases · device-aware</span>
+          <a class="button button-primary" href="#install">Start installation</a>
+          <a class="button button-link" href="#overview">Learn more <span aria-hidden="true">→</span></a>
         </div>
       </div>
 
-      <div class="hero-card" aria-label="Security status preview">
-        <div class="hero-card-top">
-          <span class="status-dot"></span>
-          <span>Security status</span>
-        </div>
-        <strong id="securityState">NOT CONNECTED</strong>
-        <div class="status-lines">
-          <div><span>Device check</span><b>Waiting</b></div>
-          <div><span>Release integrity</span><b>Waiting</b></div>
-          <div><span>Install backend</span><b>Prototype</b></div>
+      <div class="hero-visual reveal" data-delay="120">
+        <div class="device-frame" aria-label="z3r0_tr4c3 device security preview">
+          <div class="device-glow"></div>
+          <div class="device-screen">
+            <div class="device-screen-top">
+              <span>z3r0_tr4c3</span>
+              <span class="mini-lock">LOCKED</span>
+            </div>
+            <div class="shield-mark" aria-hidden="true">
+              <svg viewBox="0 0 64 64"><path d="M32 5 52 13v16c0 13-8.4 24-20 30C20.4 53 12 42 12 29V13L32 5Z"/><path d="m23 32 6 6 13-15"/></svg>
+            </div>
+            <p>System verified</p>
+            <div class="security-list">
+              <div><span>Verified Boot</span><b>Active</b></div>
+              <div><span>Hardware keystore</span><b>Active</b></div>
+              <div><span>Recovery integrity</span><b>Verified</b></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="install" class="shell installer-section">
-      <div class="section-title reveal">
-        <p class="kicker">WEB INSTALLER</p>
-        <h2>Simple by design.</h2>
-        <p>Connect the phone, load its release, verify it, then install when the device backend is ready.</p>
+    <section id="overview" class="overview-section">
+      <div class="shell">
+        <div class="section-heading reveal">
+          <p class="eyebrow">BUILT AROUND TRUST</p>
+          <h2>Security you can actually see.</h2>
+          <p>Every supported device gets a security profile based on what its hardware and boot chain can really provide.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card reveal">
+            <span class="feature-number">01</span>
+            <h3>Verified boot chain</h3>
+            <p>Signed system images, integrity checks and safe bootloader relock only on devices where the trust model supports it.</p>
+          </article>
+          <article class="feature-card reveal" data-delay="70">
+            <span class="feature-number">02</span>
+            <h3>Hardware-backed security</h3>
+            <p>Use TEE, TrustZone, hardware-backed keystore and other secure hardware exposed by each supported phone.</p>
+          </article>
+          <article class="feature-card reveal" data-delay="140">
+            <span class="feature-number">03</span>
+            <h3>Sentinel recovery</h3>
+            <p>A hardened recovery designed for signed updates, integrity reporting, secure reset and device-specific checks.</p>
+          </article>
+        </div>
       </div>
+    </section>
 
-      <div class="installer reveal">
-        <aside class="steps" aria-label="Installation steps">
-          <div class="progress-track"><span id="progressLine"></span></div>
-          <div class="install-step active" data-step="1">
-            <span>1</span><div><strong>Connect</strong><small>Identify your phone</small></div>
-          </div>
-          <div class="install-step" data-step="2">
-            <span>2</span><div><strong>Release</strong><small>Load the latest build</small></div>
-          </div>
-          <div class="install-step" data-step="3">
-            <span>3</span><div><strong>Verify</strong><small>Check SHA-256</small></div>
-          </div>
-          <div class="install-step" data-step="4">
-            <span>4</span><div><strong>Install</strong><small>Flash securely</small></div>
-          </div>
-        </aside>
+    <section id="install" class="installer-section">
+      <div class="shell">
+        <div class="section-heading reveal">
+          <p class="eyebrow">WEB INSTALLER</p>
+          <h2>Four steps. Nothing hidden.</h2>
+          <p>The installer identifies the device, loads the right release, verifies it, and only then exposes the installation step.</p>
+        </div>
 
-        <div class="install-card">
-          <div class="card-head">
+        <div class="installer-window reveal">
+          <div class="installer-topbar">
             <div>
-              <span class="label">CURRENT STEP</span>
-              <h3 id="panelTitle">Connect your phone.</h3>
+              <span class="installer-caption">z3r0_tr4c3 installer</span>
+              <strong id="panelTitle">Connect your phone</strong>
             </div>
-            <span id="panelStatusOrb" class="status-orb"></span>
-          </div>
-
-          <div class="connect-box">
-            <div class="usb-icon" aria-hidden="true">
-              <svg viewBox="0 0 48 48" role="img">
-                <path d="M24 7v25m0-25-5 5m5-5 5 5M24 22H14v7m10-2h10v-7m-20 9a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm20-13a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM24 32a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/>
-              </svg>
-            </div>
-            <div>
-              <p id="deviceStatus">No device selected.</p>
-              <button id="connectBtn" class="button primary">Connect phone</button>
+            <div class="installer-state">
+              <span id="panelStatusOrb" class="status-orb"></span>
+              <span id="securityState">NOT CONNECTED</span>
             </div>
           </div>
 
-          <div class="task-list">
-            <div class="task">
-              <div><strong>Latest release</strong><small id="releaseStatus">Not loaded</small></div>
-              <button id="releaseBtn" class="button secondary small">Load</button>
+          <div class="step-strip" aria-label="Installation progress">
+            <div class="install-step active" data-step="1"><span>1</span><strong>Connect</strong></div>
+            <div class="step-line"><i id="progressLine"></i></div>
+            <div class="install-step" data-step="2"><span>2</span><strong>Release</strong></div>
+            <div class="step-line"><i></i></div>
+            <div class="install-step" data-step="3"><span>3</span><strong>Verify</strong></div>
+            <div class="step-line"><i></i></div>
+            <div class="install-step" data-step="4"><span>4</span><strong>Install</strong></div>
+          </div>
+
+          <div class="installer-content">
+            <div class="connect-panel">
+              <div class="connect-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48"><path d="M24 6v25m0-25-5 5m5-5 5 5M24 21H14v7m10-2h10v-7m-20 9a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm20-13a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM24 31a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg>
+              </div>
+              <div class="connect-copy">
+                <span class="panel-label">DEVICE</span>
+                <p id="deviceStatus">No device selected.</p>
+                <button id="connectBtn" class="button button-primary">Connect phone</button>
+              </div>
             </div>
-            <div class="task">
-              <div><strong>Package integrity</strong><small id="verifyStatus">Waiting for release</small></div>
-              <button id="verifyBtn" class="button secondary small" disabled>Verify</button>
-            </div>
-            <div class="task muted-task">
-              <div><strong>Install z3r0_tr4c3</strong><small>Backend locked in this prototype</small></div>
-              <button id="installBtn" class="button secondary small" disabled>Install</button>
+
+            <div class="task-list">
+              <div class="task-row">
+                <div class="task-copy">
+                  <span class="task-index">01</span>
+                  <div><strong>Latest release</strong><small id="releaseStatus">Not loaded</small></div>
+                </div>
+                <button id="releaseBtn" class="button button-secondary button-small">Load</button>
+              </div>
+              <div class="task-row">
+                <div class="task-copy">
+                  <span class="task-index">02</span>
+                  <div><strong>Package integrity</strong><small id="verifyStatus">Waiting for release</small></div>
+                </div>
+                <button id="verifyBtn" class="button button-secondary button-small" disabled>Verify</button>
+              </div>
+              <div class="task-row task-disabled">
+                <div class="task-copy">
+                  <span class="task-index">03</span>
+                  <div><strong>Install z3r0_tr4c3</strong><small>Flashing backend is intentionally disabled in this prototype.</small></div>
+                </div>
+                <button id="installBtn" class="button button-secondary button-small" disabled>Install</button>
+              </div>
             </div>
           </div>
+        </div>
+
+        <p class="installer-note reveal">Use desktop Chrome or Edge over HTTPS. Only flash builds made for the exact device.</p>
+      </div>
+    </section>
+
+    <section id="devices" class="devices-section">
+      <div class="shell">
+        <div class="section-heading reveal">
+          <p class="eyebrow">REFERENCE DEVICES</p>
+          <h2>Starting small. Building properly.</h2>
+          <p>The first two devices are research platforms for the boot chain, recovery and hardware-backed security layer.</p>
+        </div>
+
+        <div class="device-grid">
+          <article class="device-card reveal">
+            <div class="device-card-top"><span>Samsung</span><span class="pill">Research</span></div>
+            <h3>Galaxy A5 (2017)</h3>
+            <p>Knox / TrustZone research, Samsung Download Mode backend and maximum usable hardware-backed security.</p>
+            <div class="device-meta"><span>a5y17lte</span><span>2017</span></div>
+          </article>
+          <article class="device-card reveal" data-delay="90">
+            <div class="device-card-top"><span>OnePlus</span><span class="pill">Research</span></div>
+            <h3>Nord N100</h3>
+            <p>Fastboot backend, AVB research and safe custom verified-boot / bootloader relock investigation.</p>
+            <div class="device-meta"><span>billie2</span><span>2020</span></div>
+          </article>
         </div>
       </div>
     </section>
 
-    <section id="devices" class="shell devices-section">
-      <div class="section-title reveal">
-        <p class="kicker">REFERENCE DEVICES</p>
-        <h2>Starting with two phones.</h2>
-      </div>
-
-      <div class="device-grid">
-        <article class="device reveal">
-          <div>
-            <span class="device-meta">2017 · a5y17lte</span>
-            <h3>Samsung Galaxy A5</h3>
-            <p>Download Mode backend, Knox/TEE research and maximum hardware-backed security where accessible.</p>
-          </div>
-          <span class="device-state">Research</span>
-        </article>
-
-        <article class="device reveal">
-          <div>
-            <span class="device-meta">2020 · billie2</span>
-            <h3>OnePlus Nord N100</h3>
-            <p>Fastboot backend with custom verified-boot and safe bootloader relock research.</p>
-          </div>
-          <span class="device-state">Research</span>
-        </article>
-      </div>
-    </section>
-
-    <section class="shell diagnostics reveal">
+    <section class="diagnostics-section shell reveal">
       <details>
         <summary>Installer diagnostics</summary>
         <pre id="log">[z3r0] installer initialized\n[z3r0] waiting for device…</pre>
@@ -150,9 +194,14 @@
     </section>
   </main>
 
-  <footer class="shell footer">
-    <span>z3r0_tr4c3</span>
-    <p>Only flash builds made for the exact device.</p>
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div>
+        <strong>z3r0_tr4c3</strong>
+        <span>Secure Android for hardware worth keeping.</span>
+      </div>
+      <span>Prototype installer</span>
+    </div>
   </footer>
 
   <script src="config.js"></script>

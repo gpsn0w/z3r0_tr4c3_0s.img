@@ -38,7 +38,10 @@ function setStep(step) {
   });
   const progress = ((state.step - 1) / 3) * 100;
   const line = $("progressLine");
-  if (line) line.style.height = `${progress}%`;
+  if (line) line.style.width = `${progress}%`;
+  document.querySelectorAll(".step-line i").forEach((segment, index) => {
+    segment.style.width = index < state.step - 1 ? "100%" : "0%";
+  });
 }
 
 function vendorHex(id) {
@@ -248,19 +251,6 @@ function setupRevealAnimations() {
   items.forEach(el => observer.observe(el));
 }
 
-function setupOrbParallax() {
-  const wrap = $("orbWrap");
-  if (!wrap || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const hero = wrap.closest(".hero-visual");
-  hero.addEventListener("pointermove", (event) => {
-    const r = hero.getBoundingClientRect();
-    const x = (event.clientX - r.left) / r.width - .5;
-    const y = (event.clientY - r.top) / r.height - .5;
-    wrap.style.transform = `rotateY(${x * 8}deg) rotateX(${y * -8}deg) translate3d(${x * 10}px, ${y * 10}px, 0)`;
-  });
-  hero.addEventListener("pointerleave", () => { wrap.style.transform = ""; });
-}
-
 $("connectBtn").addEventListener("click", connectDevice);
 $("releaseBtn").addEventListener("click", loadLatestRelease);
 $("verifyBtn").addEventListener("click", verifyBuild);
@@ -281,6 +271,5 @@ if ("usb" in navigator) {
 }
 
 setupRevealAnimations();
-setupOrbParallax();
 setStep(1);
 checkBrowser();
