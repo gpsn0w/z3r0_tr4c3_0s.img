@@ -1,0 +1,78 @@
+name: Build z3r0 installer site
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - ".github/workflows/pages.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build GitHub Pages chunks
+        run: |
+          set -e
+
+          mkdir -p dist/build
+          cp index.html dist/index.html
+
+          ASSET_URL="https://github.com/gpsn0w/z3r0_tr4c3_0s.img/releases/download/z3r0_tr4c3.img/android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip"
+          EXPECTED_SHA="02690bb48d8796d1e935e4dee807909df8624dc285c58d8e6ee44ead33061283"
+
+          echo "Downloading z3r0_tr4c3 build..."
+          curl -L --fail --retry 5 --retry-delay 5 -o /tmp/z3r0.zip "$ASSET_URL"
+
+          echo "$EXPECTED_SHA  /tmp/z3r0.zip" | sha256sum -c -
+
+          echo "Splitting build..."
+          split -b 50M -d -a 3 /tmp/z3r0.zip dist/build/part-
+
+          python3 - <<'PY'
+          import os, json, glob
+
+          parts = []
+          for path in sorted(glob.glob("dist/build/part-*")):
+              parts.append({
+                  "name": os.path.basename(path),
+                  "size": os.path.getsize(path)
+              })
+
+          manifest = {
+              "device": "a5y17lte",
+              "name": "z3r0_tr4c3 A5 2017 test build",
+              "file": "android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip",
+              "sha256": "02690bb48d8796d1e935e4dee807909df8624dc285c58d8e6ee44ead33061283",
+              "size": sum(p["size"] for p in parts),
+              "parts": parts
+          }
+
+          with open("dist/build/manifest.json", "w") as f:
+              json.dump(manifest, f, indent=2)
+          PY
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
