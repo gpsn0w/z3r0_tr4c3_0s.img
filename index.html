@@ -22,7 +22,7 @@ pre{background:#0b0d10;color:#cbd5e1;border-radius:16px;padding:16px;white-space
 </head>
 <body>
 <header><nav><div class="brand">z3r0_tr4c3</div><div class="tag">A5 2017 · TWRP test</div></nav></header>
-<section class="hero"><div><div class="eyebrow">CLEAN WEBUSB BUILD</div><h1>Chrome → TWRP.<br>Без излишни магии.</h1><p>Тази версия първо доказва, че ADB и ADB Sync работят. Едва след това позволява да прехвърлиш и инсталираш build-а.</p></div></section>
+<section class="hero"><div><div class="eyebrow">WEBUSB BUILD V3 · FAIL-SAFE CONNECT</div><h1>Chrome → TWRP.<br>Без излишни магии.</h1><p>Connect бутонът работи без външни библиотеки. Първо се отваря нативният Chrome USB picker, после се зарежда ADB engine-ът и се прави self-test.</p></div></section>
 <main>
 <div class="notice"><strong>Важно:</strong> build-ът е UNTESTED. Направи backup. Installer-ът не wipe-ва и не reboot-ва автоматично.</div>
 
@@ -58,31 +58,103 @@ pre{background:#0b0d10;color:#cbd5e1;border-radius:16px;padding:16px;white-space
 <section class="card"><h2>Installer log</h2><pre id="log">[z3r0] Зареждане…\n</pre></section>
 </main>
 
-<script type="module">
-import { Adb, AdbDaemonTransport } from "https://cdn.jsdelivr.net/npm/@yume-chan/adb@2.3.2/+esm";
-import * as CredentialModule from "https://cdn.jsdelivr.net/npm/@yume-chan/adb-credential-web@2.1.0/+esm";
-import { AdbDaemonWebUsbDeviceManager } from "https://cdn.jsdelivr.net/npm/@yume-chan/adb-daemon-webusb@2.3.2/+esm";
+<script>
+(function(){
+"use strict";
 
 const ASSET_NAME = "android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip";
 const EXPECTED_SHA = "02690bb48d8796d1e935e4dee807909df8624dc285c58d8e6ee44ead33061283";
 const REMOTE_PATH = `/sdcard/Download/${ASSET_NAME}`;
 const $ = id => document.getElementById(id);
 const logEl = $("log");
+const connectBtn = $("connectBtn");
+
+let libs = null;
 let adb = null;
 let backend = null;
 let transport = null;
 let ready = false;
 let transferred = false;
 let verified = false;
+let connecting = false;
 
-function log(msg){const t=new Date().toLocaleTimeString();logEl.textContent+=`[${t}] ${msg}\n`;logEl.scrollTop=logEl.scrollHeight;}
-function setState(id,text,cls=""){const el=$(id);el.textContent=text;el.className=cls;}
-function setReady(v){ready=v;$("fileInput").disabled=!v;$("pickLabel").classList.toggle("disabled",!v);}
-function bytesToText(value){if(typeof value==="string")return value;return new TextDecoder().decode(value||new Uint8Array());}
+function log(msg){
+  const t=new Date().toLocaleTimeString();
+  logEl.textContent += `[${t}] ${msg}\n`;
+  logEl.scrollTop=logEl.scrollHeight;
+}
+function setState(id,text,cls=""){
+  const el=$(id); if(!el) return;
+  el.textContent=text; el.className=cls;
+}
+function setReady(v){
+  ready=!!v;
+  $("fileInput").disabled=!ready;
+  $("pickLabel").classList.toggle("disabled",!ready);
+}
+function bytesToText(value){
+  if(typeof value === "string") return value;
+  return new TextDecoder().decode(value || new Uint8Array());
+}
+function describeError(e){
+  if(!e) return "Unknown error";
+  return `${e.name ? e.name+": " : ""}${e.message || String(e)}`;
+}
+
+async function importWithFallback(name, urls){
+  let last;
+  for(const url of urls){
+    try{
+      log(`Зареждам ${name}…`);
+      const mod = await import(url);
+      log(`${name}: OK`);
+      return mod;
+    }catch(e){
+      last=e;
+      console.warn(`[z3r0] ${name} failed from ${url}`,e);
+      log(`${name}: CDN опитът не успя, пробвам резервен…`);
+    }
+  }
+  throw new Error(`${name} не може да се зареди: ${describeError(last)}`);
+}
+
+async function loadLibraries(){
+  if(libs) return libs;
+  const [adbMod, credMod, usbMod] = await Promise.all([
+    importWithFallback("ADB core",[
+      "https://cdn.jsdelivr.net/npm/@yume-chan/adb@2.3.2/+esm",
+      "https://esm.sh/@yume-chan/adb@2.3.2"
+    ]),
+    importWithFallback("ADB credentials",[
+      "https://cdn.jsdelivr.net/npm/@yume-chan/adb-credential-web@2.1.0/+esm",
+      "https://esm.sh/@yume-chan/adb-credential-web@2.1.0"
+    ]),
+    importWithFallback("WebUSB transport",[
+      "https://cdn.jsdelivr.net/npm/@yume-chan/adb-daemon-webusb@2.3.2/+esm",
+      "https://esm.sh/@yume-chan/adb-daemon-webusb@2.3.2"
+    ])
+  ]);
+  libs={
+    Adb: adbMod.Adb,
+    AdbDaemonTransport: adbMod.AdbDaemonTransport,
+    CredentialModule: credMod,
+    AdbDaemonWebUsbDeviceManager: usbMod.AdbDaemonWebUsbDeviceManager
+  };
+  if(!libs.Adb || !libs.AdbDaemonTransport || !libs.AdbDaemonWebUsbDeviceManager){
+    throw new Error("ADB библиотеките се заредиха, но липсва очакван API");
+  }
+  return libs;
+}
+
+function makeCredentialStore(){
+  const M=libs.CredentialModule;
+  const C=M.default || M.AdbWebCredentialStore;
+  if(!C) throw new Error("Credential store API не е намерен");
+  return new C("z3r0_tr4c3 Web Installer");
+}
 
 async function shell(command){
   if(!adb) throw new Error("Няма ADB връзка");
-  // Tango 2.x: noneProtocol is the most compatible shell path for recovery environments.
   if(adb.subprocess?.noneProtocol?.spawnWaitText){
     return (await adb.subprocess.noneProtocol.spawnWaitText(command)).trim();
   }
@@ -93,20 +165,15 @@ async function shell(command){
   throw new Error("ADB shell API не е наличен");
 }
 
-function makeCredentialStore(){
-  const C = CredentialModule.default || CredentialModule.AdbWebCredentialStore;
-  if(!C) throw new Error("Credential store module не се зареди");
-  return new C();
-}
-
 async function syncWrite(path, readable){
-  const sync = await adb.sync();
-  try { await sync.write({ filename:path, file:readable }); }
-  finally { await sync.dispose(); }
+  const sync=await adb.sync();
+  try{ await sync.write({filename:path,file:readable}); }
+  finally{ await sync.dispose(); }
 }
 
 function smallTestStream(){
-  const data=new Uint8Array(4096);for(let i=0;i<data.length;i++)data[i]=i&255;
+  const data=new Uint8Array(4096);
+  for(let i=0;i<data.length;i++) data[i]=i&255;
   return new ReadableStream({start(c){c.enqueue(data);c.close();}});
 }
 
@@ -121,7 +188,9 @@ async function runSelfTest(){
   setState("modelState",model||"Unknown");
   setState("codeState",device||buildProduct||"Unknown");
   const combined=`${model} ${device} ${buildProduct}`.toLowerCase();
-  if(!(combined.includes("a5y17lte") || combined.includes("sm-a520"))) throw new Error(`Грешно устройство: ${model} / ${device}`);
+  if(!(combined.includes("a5y17lte") || combined.includes("sm-a520"))){
+    throw new Error(`Грешно устройство: ${model} / ${device}`);
+  }
   setState("codeState",device||buildProduct,"ok");
 
   let twrp=await shell("getprop ro.twrp.version");
@@ -134,57 +203,120 @@ async function runSelfTest(){
   await shell("rm -f /tmp/z3r0_webusb_test.bin");
   if(!String(size).includes("4096")) throw new Error(`ADB Sync self-test failed (size=${size||"?"})`);
   setState("syncState","Работи","ok");
-  log("SELF-TEST PASSED. Големият ZIP може да се прехвърля.");
   setReady(true);
+  log("SELF-TEST PASSED. Можеш да избереш ZIP-а.");
 }
 
-$("connectBtn").addEventListener("click",async()=>{
+async function connectSelectedRawDevice(rawDevice){
+  await loadLibraries();
+  const ManagerClass=libs.AdbDaemonWebUsbDeviceManager;
+  const manager=ManagerClass.BROWSER || new ManagerClass(navigator.usb);
+  if(!manager) throw new Error("Tango WebUSB manager не е наличен");
+
+  log("USB permission е даден. Намирам ADB интерфейса…");
+  const devices=await manager.getDevices();
+  if(!devices.length) throw new Error("Телефонът е избран, но не намирам активен ADB интерфейс. TWRP трябва да е на normal screen, не ADB Sideload.");
+
+  backend=devices.find(d => d.raw === rawDevice)
+    || devices.find(d => d.raw?.serialNumber && d.raw.serialNumber === rawDevice.serialNumber)
+    || devices.find(d => d.serial && d.serial === rawDevice.serialNumber)
+    || devices[0];
+
+  log(`ADB устройство: ${backend.serial || backend.raw?.serialNumber || "без serial"}`);
+  const connection=await backend.connect();
+  log("USB interface claimed. ADB handshake…");
+
+  transport=await libs.AdbDaemonTransport.authenticate({
+    serial: backend.serial || rawDevice.serialNumber || "z3r0-device",
+    connection,
+    credentialStore: makeCredentialStore()
+  });
+  adb=new libs.Adb(transport);
+  setState("adbState","Свързан","ok");
+  $("disconnectBtn").disabled=false;
+  await runSelfTest();
+}
+
+connectBtn.disabled=false;
+connectBtn.style.pointerEvents="auto";
+connectBtn.setAttribute("aria-disabled","false");
+
+connectBtn.addEventListener("click", async function(){
+  if(connecting) return;
+  connecting=true;
+  connectBtn.disabled=true;
+  connectBtn.textContent="Свързване…";
+  setReady(false); transferred=false; verified=false;
+  $("verifyBtn").disabled=true; $("installBtn").disabled=true;
   try{
-    setReady(false); transferred=false; verified=false; $("verifyBtn").disabled=true; $("installBtn").disabled=true;
-    if(!window.isSecureContext) throw new Error("Трябва HTTPS или localhost");
-    const manager=AdbDaemonWebUsbDeviceManager.BROWSER;
-    if(!manager) throw new Error("WebUSB не е наличен. Използвай desktop Chrome/Edge");
-    log("Отварям WebUSB device picker…");
-    backend=await manager.requestDevice();
-    if(!backend){log("Няма избрано устройство.");return;}
-    log(`USB избран: ${backend.serial||"без serial"}`);
-    const connection=await backend.connect();
-    log("USB interface claimed. Започвам ADB handshake…");
-    transport=await AdbDaemonTransport.authenticate({serial:backend.serial,connection,credentialStore:makeCredentialStore()});
-    adb=new Adb(transport);
-    setState("adbState","Свързан","ok");
-    $("disconnectBtn").disabled=false;
-    await runSelfTest();
+    if(!window.isSecureContext) throw new Error("Отвори сайта през HTTPS (GitHub Pages), не file://");
+    if(!navigator.usb) throw new Error("Този браузър няма WebUSB. Използвай desktop Chrome/Edge.");
+
+    // IMPORTANT: the native picker is called immediately inside the user's click.
+    // This avoids losing WebUSB user activation while remote modules are loading.
+    log("Отварям НАТИВНИЯ Chrome USB picker…");
+    const rawDevice=await navigator.usb.requestDevice({
+      filters:[
+        {vendorId:0x04e8},
+        {classCode:0xff,subclassCode:0x42,protocolCode:0x01}
+      ]
+    });
+    log(`Избрано USB устройство: ${rawDevice.productName || "Samsung"} / ${rawDevice.serialNumber || "без serial"}`);
+    await connectSelectedRawDevice(rawDevice);
   }catch(e){
-    console.error(e);log(`ERROR: ${e?.stack||e}`);setState("adbState","Грешка","bad");setReady(false);
+    console.error("[z3r0 connect]",e);
+    const msg=describeError(e);
+    log(`CONNECT ERROR: ${msg}`);
+    setState("adbState","Грешка","bad");
+    setReady(false);
+  }finally{
+    connecting=false;
+    connectBtn.disabled=false;
+    connectBtn.textContent="Connect & test TWRP";
   }
 });
 
 $("disconnectBtn").addEventListener("click",async()=>{
-  try{await transport?.close?.();}catch{}
-  adb=null;backend=null;transport=null;setReady(false);$("disconnectBtn").disabled=true;setState("adbState","Не е свързан");log("Disconnected.");
+  try{await transport?.close?.();}catch(e){console.warn(e);}
+  adb=null;backend=null;transport=null;setReady(false);
+  $("disconnectBtn").disabled=true;
+  setState("adbState","Не е свързан");
+  log("Disconnected.");
 });
 
 function progressStream(stream,total){
-  const reader=stream.getReader();let doneBytes=0;$("progressWrap").style.display="block";
+  const reader=stream.getReader(); let doneBytes=0;
+  $("progressWrap").style.display="block";
   return new ReadableStream({
-    async pull(controller){const r=await reader.read();if(r.done){controller.close();return;}doneBytes+=r.value.byteLength;const p=total?Math.min(100,doneBytes/total*100):0;$("bar").style.width=`${p}%`;$("pct").textContent=`${p.toFixed(1)}%`;$("bytes").textContent=`${(doneBytes/1048576).toFixed(1)} / ${(total/1048576).toFixed(1)} MB`;controller.enqueue(r.value);},
+    async pull(controller){
+      const r=await reader.read();
+      if(r.done){controller.close();return;}
+      doneBytes+=r.value.byteLength;
+      const p=total?Math.min(100,doneBytes/total*100):0;
+      $("bar").style.width=`${p}%`;
+      $("pct").textContent=`${p.toFixed(1)}%`;
+      $("bytes").textContent=`${(doneBytes/1048576).toFixed(1)} / ${(total/1048576).toFixed(1)} MB`;
+      controller.enqueue(r.value);
+    },
     cancel(reason){reader.cancel(reason);}
   });
 }
 
 $("fileInput").addEventListener("change",async ev=>{
-  const file=ev.target.files?.[0];if(!file)return;
+  const file=ev.target.files?.[0]; if(!file)return;
   try{
     if(!ready) throw new Error("Self-test не е минал");
-    verified=false;transferred=false;$("verifyBtn").disabled=true;$("installBtn").disabled=true;
+    verified=false;transferred=false;
+    $("verifyBtn").disabled=true;$("installBtn").disabled=true;
     log(`Избран файл: ${file.name} (${(file.size/1048576).toFixed(1)} MB)`);
-    if(file.name!==ASSET_NAME) log(`WARNING: filename е различно от очакваното. SHA-256 ще реши дали е правилният build.`);
     await shell("mkdir -p /sdcard/Download");
     log(`ADB push → ${REMOTE_PATH}`);
     await syncWrite(REMOTE_PATH,progressStream(file.stream(),file.size));
-    transferred=true;$("verifyBtn").disabled=false;$("verifyText").textContent="Transfer завърши. Натисни Verify.";log("Transfer complete.");
-  }catch(e){console.error(e);log(`TRANSFER ERROR: ${e?.stack||e}`);}
+    transferred=true;
+    $("verifyBtn").disabled=false;
+    $("verifyText").textContent="Transfer завърши. Натисни Verify.";
+    log("Transfer complete.");
+  }catch(e){console.error(e);log(`TRANSFER ERROR: ${describeError(e)}`);}
 });
 
 $("verifyBtn").addEventListener("click",async()=>{
@@ -195,23 +327,46 @@ $("verifyBtn").addEventListener("click",async()=>{
     const got=(out.match(/[0-9a-fA-F]{64}/)||[""])[0].toLowerCase();
     if(!got) throw new Error("Не успях да изчисля SHA-256");
     log(`SHA-256: ${got}`);
-    if(got!==EXPECTED_SHA){verified=false;$("installBtn").disabled=true;$("verifyText").textContent="HASH НЕ СЪВПАДА — Install е блокиран.";$("verifyText").className="bad";throw new Error("SHA-256 mismatch");}
-    verified=true;$("verifyText").textContent="SHA-256 съвпада. Build-ът е потвърден.";$("verifyText").className="ok";$("installBtn").disabled=false;log("VERIFY PASSED.");
-  }catch(e){console.error(e);log(`VERIFY ERROR: ${e?.stack||e}`);}
+    if(got!==EXPECTED_SHA){
+      verified=false; $("installBtn").disabled=true;
+      $("verifyText").textContent="HASH НЕ СЪВПАДА — Install е блокиран.";
+      $("verifyText").className="bad";
+      throw new Error("SHA-256 mismatch");
+    }
+    verified=true;
+    $("verifyText").textContent="SHA-256 съвпада. Build-ът е потвърден.";
+    $("verifyText").className="ok";
+    $("installBtn").disabled=false;
+    log("VERIFY PASSED.");
+  }catch(e){console.error(e);log(`VERIFY ERROR: ${describeError(e)}`);}
 });
 
 $("installBtn").addEventListener("click",async()=>{
   try{
     if(!ready||!verified) throw new Error("Device/build verification не е минала");
-    if(!confirm("Това ще стартира TWRP install на UNTESTED build. Имаш ли backup и искаш ли да продължиш?")){log("Install cancelled.");return;}
-    $("installBtn").disabled=true;log(`twrp install '${REMOTE_PATH}'`);
-    const out=await shell(`twrp install '${REMOTE_PATH}'`);if(out)log(out);log("TWRP install command finished. Не reboot-вам автоматично.");
-  }catch(e){console.error(e);log(`INSTALL ERROR: ${e?.stack||e}`);}finally{if(verified)$("installBtn").disabled=false;}
+    if(!confirm("Ще стартира TWRP install на UNTESTED build. Продължаваме ли?")){log("Install cancelled.");return;}
+    $("installBtn").disabled=true;
+    log(`twrp install '${REMOTE_PATH}'`);
+    const out=await shell(`twrp install '${REMOTE_PATH}'`);
+    if(out)log(out);
+    log("TWRP install command finished. Не reboot-вам автоматично.");
+  }catch(e){console.error(e);log(`INSTALL ERROR: ${describeError(e)}`);}
+  finally{if(verified)$("installBtn").disabled=false;}
 });
 
-if(!("usb" in navigator)){setState("webusbState","Няма WebUSB","bad");log("WebUSB липсва.");}
-else if(!window.isSecureContext){setState("webusbState","Нужен е HTTPS","bad");log("Нужен е HTTPS/localhost.");}
-else{setState("webusbState","Готов","ok");log("WebUSB е готов. Използвай Chrome/Edge и TWRP normal mode.");}
+// This initialization is intentionally dependency-free so the button can never
+// become a dead UI element because a remote ESM module failed to load.
+if(!window.isSecureContext){
+  setState("webusbState","Нужен е HTTPS","bad");
+  log("Страницата не е secure context. Използвай GitHub Pages HTTPS.");
+}else if(!navigator.usb){
+  setState("webusbState","Няма WebUSB","bad");
+  log("WebUSB липсва. Използвай desktop Chrome/Edge.");
+}else{
+  setState("webusbState","Готов","ok");
+  log("Connect бутонът е активен. WebUSB е наличен.");
+}
+})();
 </script>
 </body>
 </html>
