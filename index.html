@@ -22,7 +22,7 @@ pre{background:#0b0d10;color:#cbd5e1;border-radius:16px;padding:16px;white-space
 </head>
 <body>
 <header><nav><div class="brand">z3r0_tr4c3</div><div class="tag">A5 2017 · TWRP test</div></nav></header>
-<section class="hero"><div><div class="eyebrow">WEBUSB BUILD V4 · VERIFIED ADB CORE</div><h1>Chrome → TWRP.<br>Без излишни магии.</h1><p>ADB engine-ът се проверява предварително с правилната версия. После Chrome отваря USB picker и прави пълен ADB/TWRP self-test.</p></div></section>
+<section class="hero"><div><div class="eyebrow">WEBUSB BUILD V5 · DIRECT RELEASE STREAM</div><h1>Chrome → TWRP.<br>Без излишни магии.</h1><p>Свържи телефона, после build-ът се стриймва директно от GitHub Releases към TWRP. Няма Download и няма Choose ZIP.</p></div></section>
 <main>
 <div class="notice"><strong>Важно:</strong> build-ът е UNTESTED. Направи backup. Installer-ът не wipe-ва и не reboot-ва автоматично.</div>
 
@@ -41,18 +41,17 @@ pre{background:#0b0d10;color:#cbd5e1;border-radius:16px;padding:16px;white-space
 </section>
 
 <section class="card">
-<h2>2. Build</h2>
-<p>GitHub Release asset: <strong>android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip</strong></p>
+<h2>2. GitHub → TWRP</h2>
+<p>Release asset: <strong>android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip</strong></p>
 <div class="kv"><span>Очакван SHA-256</span><strong class="hash">02690bb48d8796d1e935e4dee807909df8624dc285c58d8e6ee44ead33061283</strong></div>
-<div class="step"><div><strong>A. Свали build-а</strong><small>Отваря нормалното GitHub download. Това избягва CORS проблемите на GitHub Releases.</small></div><div class="right"><a class="btn secondary" href="https://github.com/gpsn0w/z3r0_tr4c3_0s.img/releases/download/z3r0_tr4c3.img/android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip">Download from GitHub</a></div></div>
-<div class="step"><div><strong>B. Избери сваления ZIP</strong><small>Chrome ще го stream-не през ADB директно към TWRP.</small></div><div class="right"><label id="pickLabel" class="btn primary disabled">Choose ZIP<input id="fileInput" type="file" accept=".zip,application/zip" disabled></label></div></div>
+<div class="step"><div><strong>Подготви build-а</strong><small>Chrome стриймва файла директно GitHub → TWRP. Не се записва в Downloads.</small></div><div class="right"><button id="streamBtn" class="primary" disabled>Transfer from GitHub</button></div></div>
 <div id="progressWrap" class="progressWrap"><div class="progress"><div id="bar" class="bar"></div></div><div class="progmeta"><span id="pct">0%</span><span id="bytes">0 MB</span></div></div>
+<div class="step"><div><strong>Проверка</strong><small id="verifyText">Ще се направи автоматично след transfer-а.</small></div><div class="right"><strong id="verifyBadge">—</strong></div></div>
 </section>
 
 <section class="card">
-<h2>3. Verify → Install</h2>
-<div class="step"><div><strong>SHA-256 в TWRP</strong><small id="verifyText">Първо прехвърли ZIP-а.</small></div><div class="right"><button id="verifyBtn" class="secondary" disabled>Verify</button></div></div>
-<div class="step"><div><strong>Инсталация</strong><small>Пуска <code>twrp install</code>. Няма wipe и няма автоматичен reboot.</small></div><div class="right"><button id="installBtn" class="danger" disabled>Install z3r0_tr4c3</button></div></div>
+<h2>3. Install</h2>
+<div class="step"><div><strong>Инсталация</strong><small>Бутонът се отключва само след успешен SHA-256 в TWRP. Няма wipe и няма автоматичен reboot.</small></div><div class="right"><button id="installBtn" class="danger" disabled>Install z3r0_tr4c3</button></div></div>
 </section>
 
 <section class="card"><h2>Installer log</h2><pre id="log">[z3r0] Зареждане…\n</pre></section>
@@ -65,6 +64,10 @@ pre{background:#0b0d10;color:#cbd5e1;border-radius:16px;padding:16px;white-space
 const ASSET_NAME = "android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip";
 const EXPECTED_SHA = "02690bb48d8796d1e935e4dee807909df8624dc285c58d8e6ee44ead33061283";
 const REMOTE_PATH = `/sdcard/Download/${ASSET_NAME}`;
+const GH_OWNER = "gpsn0w";
+const GH_REPO = "z3r0_tr4c3_0s.img";
+const GH_TAG = "z3r0_tr4c3.img";
+const GH_RELEASE_API = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/releases/tags/${encodeURIComponent(GH_TAG)}`;
 const $ = id => document.getElementById(id);
 const logEl = $("log");
 const connectBtn = $("connectBtn");
@@ -89,8 +92,7 @@ function setState(id,text,cls=""){
 }
 function setReady(v){
   ready=!!v;
-  $("fileInput").disabled=!ready;
-  $("pickLabel").classList.toggle("disabled",!ready);
+  $("streamBtn").disabled=!ready;
 }
 function bytesToText(value){
   if(typeof value === "string") return value;
@@ -205,7 +207,7 @@ async function runSelfTest(){
   if(!String(size).includes("4096")) throw new Error(`ADB Sync self-test failed (size=${size||"?"})`);
   setState("syncState","Работи","ok");
   setReady(true);
-  log("SELF-TEST PASSED. Можеш да избереш ZIP-а.");
+  log("SELF-TEST PASSED. Direct GitHub transfer е отключен.");
 }
 
 async function connectSelectedRawDevice(rawDevice){
@@ -248,7 +250,9 @@ connectBtn.addEventListener("click", async function(){
   connectBtn.disabled=true;
   connectBtn.textContent="Свързване…";
   setReady(false); transferred=false; verified=false;
-  $("verifyBtn").disabled=true; $("installBtn").disabled=true;
+  $("installBtn").disabled=true;
+  $("verifyBadge").textContent="—";
+  $("verifyBadge").className="";
   try{
     if(!window.isSecureContext) throw new Error("Отвори сайта през HTTPS (GitHub Pages), не file://");
     if(!navigator.usb) throw new Error("Този браузър няма WebUSB. Използвай desktop Chrome/Edge.");
@@ -303,43 +307,111 @@ function progressStream(stream,total){
   });
 }
 
-$("fileInput").addEventListener("change",async ev=>{
-  const file=ev.target.files?.[0]; if(!file)return;
-  try{
-    if(!ready) throw new Error("Self-test не е минал");
-    verified=false;transferred=false;
-    $("verifyBtn").disabled=true;$("installBtn").disabled=true;
-    log(`Избран файл: ${file.name} (${(file.size/1048576).toFixed(1)} MB)`);
-    await shell("mkdir -p /sdcard/Download");
-    log(`ADB push → ${REMOTE_PATH}`);
-    await syncWrite(REMOTE_PATH,progressStream(file.stream(),file.size));
-    transferred=true;
-    $("verifyBtn").disabled=false;
-    $("verifyText").textContent="Transfer завърши. Натисни Verify.";
-    log("Transfer complete.");
-  }catch(e){console.error(e);log(`TRANSFER ERROR: ${describeError(e)}`);}
-});
+async function getReleaseAsset(){
+  log("GitHub: чета release metadata…");
+  const r=await fetch(GH_RELEASE_API,{
+    headers:{"Accept":"application/vnd.github+json"},
+    cache:"no-store"
+  });
+  if(!r.ok) throw new Error(`GitHub release metadata: HTTP ${r.status}`);
+  const release=await r.json();
+  const asset=(release.assets||[]).find(a=>a.name===ASSET_NAME);
+  if(!asset) throw new Error(`Release asset не е намерен: ${ASSET_NAME}`);
+  if(asset.state && asset.state!=="uploaded") throw new Error(`GitHub asset state: ${asset.state}`);
+  if(asset.digest){
+    const expected=`sha256:${EXPECTED_SHA}`;
+    if(asset.digest.toLowerCase()!==expected) throw new Error(`GitHub digest не съвпада (${asset.digest})`);
+    log("GitHub release digest: OK");
+  }
+  log(`GitHub asset: ${(asset.size/1048576).toFixed(1)} MB`);
+  return asset;
+}
 
-$("verifyBtn").addEventListener("click",async()=>{
-  try{
-    if(!transferred) throw new Error("Няма прехвърлен ZIP");
-    log("SHA-256 проверка в TWRP…");
-    const out=await shell(`sha256sum '${REMOTE_PATH}' 2>/dev/null || toybox sha256sum '${REMOTE_PATH}' 2>/dev/null || busybox sha256sum '${REMOTE_PATH}' 2>/dev/null`);
-    const got=(out.match(/[0-9a-fA-F]{64}/)||[""])[0].toLowerCase();
-    if(!got) throw new Error("Не успях да изчисля SHA-256");
-    log(`SHA-256: ${got}`);
-    if(got!==EXPECTED_SHA){
-      verified=false; $("installBtn").disabled=true;
-      $("verifyText").textContent="HASH НЕ СЪВПАДА — Install е блокиран.";
-      $("verifyText").className="bad";
-      throw new Error("SHA-256 mismatch");
+async function fetchAsset(asset){
+  const attempts=[
+    {name:"browser_download_url",url:asset.browser_download_url,options:{cache:"no-store",redirect:"follow"}},
+    {name:"GitHub API octet-stream",url:asset.url,options:{
+      cache:"no-store",redirect:"follow",
+      headers:{"Accept":"application/octet-stream"}
+    }}
+  ];
+  let last;
+  for(const a of attempts){
+    try{
+      log(`GitHub: отварям stream (${a.name})…`);
+      const r=await fetch(a.url,a.options);
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      if(!r.body) throw new Error("Browser не даде ReadableStream");
+      const ct=(r.headers.get("content-type")||"").toLowerCase();
+      if(ct.includes("application/json")) throw new Error("GitHub върна JSON вместо binary asset");
+      return r;
+    }catch(e){
+      last=e;
+      console.warn(`[z3r0] ${a.name} failed`,e);
+      log(`GitHub stream (${a.name}) не успя: ${describeError(e)}`);
     }
-    verified=true;
-    $("verifyText").textContent="SHA-256 съвпада. Build-ът е потвърден.";
-    $("verifyText").className="ok";
-    $("installBtn").disabled=false;
-    log("VERIFY PASSED.");
-  }catch(e){console.error(e);log(`VERIFY ERROR: ${describeError(e)}`);}
+  }
+  throw new Error(`Не мога да отворя release stream: ${describeError(last)}`);
+}
+
+async function verifyRemoteBuild(){
+  log("SHA-256 проверка в TWRP…");
+  const out=await shell(`sha256sum '${REMOTE_PATH}' 2>/dev/null || toybox sha256sum '${REMOTE_PATH}' 2>/dev/null || busybox sha256sum '${REMOTE_PATH}' 2>/dev/null`);
+  const got=(out.match(/[0-9a-fA-F]{64}/)||[""])[0].toLowerCase();
+  if(!got) throw new Error("Не успях да изчисля SHA-256");
+  log(`SHA-256: ${got}`);
+  if(got!==EXPECTED_SHA){
+    verified=false;
+    $("installBtn").disabled=true;
+    $("verifyText").textContent="HASH НЕ СЪВПАДА — Install е блокиран.";
+    $("verifyText").className="bad";
+    $("verifyBadge").textContent="FAILED";
+    $("verifyBadge").className="bad";
+    throw new Error("SHA-256 mismatch");
+  }
+  verified=true;
+  $("verifyText").textContent="SHA-256 съвпада. Build-ът е готов за инсталация.";
+  $("verifyText").className="ok";
+  $("verifyBadge").textContent="VERIFIED";
+  $("verifyBadge").className="ok";
+  $("installBtn").disabled=false;
+  log("VERIFY PASSED.");
+}
+
+$("streamBtn").addEventListener("click",async()=>{
+  const btn=$("streamBtn");
+  try{
+    if(!ready) throw new Error("Първо Connect & self-test");
+    verified=false;transferred=false;
+    $("installBtn").disabled=true;
+    $("verifyBadge").textContent="—";
+    $("verifyBadge").className="";
+    $("verifyText").textContent="Свързвам се с GitHub Release…";
+    $("verifyText").className="";
+    btn.disabled=true;
+    btn.textContent="Transferring…";
+    $("progressWrap").style.display="block";
+    $("bar").style.width="0%";
+    $("pct").textContent="0%";
+    $("bytes").textContent="0 MB";
+
+    const asset=await getReleaseAsset();
+    const response=await fetchAsset(asset);
+    await shell("mkdir -p /sdcard/Download");
+    log(`DIRECT STREAM: GitHub → Chrome → ${REMOTE_PATH}`);
+    await syncWrite(REMOTE_PATH,progressStream(response.body,asset.size));
+    transferred=true;
+    log("Direct transfer complete. Browser не е записвал ZIP в Downloads.");
+    await verifyRemoteBuild();
+  }catch(e){
+    console.error(e);
+    log(`DIRECT TRANSFER ERROR: ${describeError(e)}`);
+    $("verifyText").textContent="Transfer/verify не успя. Виж Installer log.";
+    $("verifyText").className="bad";
+  }finally{
+    btn.textContent="Transfer from GitHub";
+    btn.disabled=!ready;
+  }
 });
 
 $("installBtn").addEventListener("click",async()=>{
@@ -369,7 +441,7 @@ if(!window.isSecureContext){
   // Preload the exact ADB stack before the user starts touching the phone.
   // Connect stays clickable, but the log will clearly show readiness.
   loadLibraries().then(()=>{
-    log("ADB ENGINE READY: core 2.6.4 + WebUSB transport 2.3.2.");
+    log("ADB ENGINE READY: direct GitHub streaming + core 2.6.4 + WebUSB transport 2.3.2.");
     connectBtn.textContent="Connect & test TWRP";
   }).catch(e=>{
     console.error("[z3r0 preload]",e);
