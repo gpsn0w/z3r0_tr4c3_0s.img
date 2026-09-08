@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "version": "0.1.0-alpha",
+  "channel": "alpha",
+  "builds": [
+    {
+      "device": "Samsung Galaxy A5 (2017)",
+      "codename": "a5y17lte",
+      "file": "z3r0_tr4c3-0.1.0-alpha-a5y17lte.zip",
+      "sha256": "REPLACE_WITH_REAL_SHA256",
+      "backend": "samsung-download",
+      "bootloaderRelock": false
+    },
+    {
+      "device": "OnePlus Nord N100",
+      "codename": "billie2",
+      "file": "z3r0_tr4c3-0.1.0-alpha-billie2.zip",
+      "sha256": "REPLACE_WITH_REAL_SHA256",
+      "backend": "fastboot",
+      "bootloaderRelock": false
+    }
+  ]
+}
