@@ -1,211 +1,224 @@
 <!doctype html>
-<html lang="en">
+<html lang="bg">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#07090d" />
-  <meta name="description" content="z3r0_tr4c3 secure Android web installer" />
-  <title>z3r0_tr4c3 — Secure Android</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b0d10" />
+  <title>z3r0_tr4c3 — Samsung A5 TWRP Test</title>
+  <style>
+    :root{--bg:#f5f5f7;--panel:#fff;--text:#111318;--muted:#6e737c;--line:#dedfe3;--accent:#2775ff;--accent2:#0056d6;--dark:#090b0f;--ok:#1d8f4e;--warn:#b56d00;--bad:#c43232}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .top{background:rgba(9,11,15,.92);color:white;position:sticky;top:0;z-index:10;backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.08)}
+    .nav{max-width:980px;margin:auto;padding:14px 22px;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:700;letter-spacing:-.02em}.test{font-size:13px;color:#b9c0cb}
+    .hero{background:var(--dark);color:white;padding:88px 22px 70px}.hero-inner{max-width:980px;margin:auto}.eyebrow{font-size:13px;letter-spacing:.12em;font-weight:700;color:#9aa4b2}.hero h1{font-size:clamp(44px,8vw,84px);line-height:.96;letter-spacing:-.06em;margin:14px 0 22px;max-width:850px}.hero p{color:#b9c0cb;max-width:700px;font-size:19px;line-height:1.55;margin:0}
+    main{max-width:980px;margin:auto;padding:44px 22px 80px}.notice{border:1px solid #f0cf98;background:#fff8eb;border-radius:18px;padding:18px 20px;line-height:1.55;margin-bottom:24px}.notice strong{display:block;margin-bottom:5px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:0 10px 30px rgba(0,0,0,.04);margin-bottom:22px}.panel h2{margin:0 0 8px;font-size:26px;letter-spacing:-.035em}.panel p{color:var(--muted);line-height:1.55;margin:0 0 20px}
+    .steps{display:grid;gap:12px}.step{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;border:1px solid var(--line);border-radius:16px}.step-left{display:flex;align-items:center;gap:14px}.num{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#eef2f8;font-weight:700}.meta strong{display:block}.meta small{display:block;color:var(--muted);margin-top:3px;word-break:break-word}
+    button,.button{appearance:none;border:0;border-radius:999px;padding:11px 18px;font-weight:650;font-size:14px;cursor:pointer;transition:.18s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.primary{background:var(--accent);color:white}.primary:hover{background:var(--accent2);transform:translateY(-1px)}.secondary{background:#eef1f5;color:#17191e}.secondary:hover{background:#e3e7ed}.danger{background:#17191e;color:white}.danger:hover{background:#000}.disabled,button:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
+    .device-card{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.kv{background:#f6f7f9;border-radius:14px;padding:14px}.kv span{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.07em}.kv strong{display:block;margin-top:4px}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+    .progress-wrap{margin-top:18px;display:none}.progress{height:10px;border-radius:999px;background:#eceff3;overflow:hidden}.bar{height:100%;width:0;background:var(--accent);transition:width .2s}.progress-text{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-top:8px}
+    pre{background:#0b0d10;color:#cbd4df;border-radius:18px;padding:18px;max-height:330px;overflow:auto;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre-wrap;word-break:break-word}.footer{color:var(--muted);font-size:13px;text-align:center;padding:10px 0 20px}
+    input[type=file]{display:none}.row-actions{display:flex;flex-wrap:wrap;gap:10px}.hash{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;word-break:break-all}
+    @media(max-width:720px){.step{align-items:flex-start;flex-direction:column}.device-card{grid-template-columns:1fr}.hero{padding-top:62px}.hero p{font-size:17px}}
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="shell nav">
-      <a class="wordmark" href="#top" aria-label="z3r0_tr4c3 home">
-        <span class="wordmark-dot" aria-hidden="true"></span>
-        <span>z3r0_tr4c3</span>
-      </a>
-      <nav class="nav-links" aria-label="Main navigation">
-        <a href="#overview">Overview</a>
-        <a href="#install">Install</a>
-        <a href="#devices">Devices</a>
-        <a href="bg/" aria-label="Българска версия">BG</a>
-      </nav>
-      <span id="browserBadge" class="badge neutral">Checking WebUSB…</span>
-    </div>
-  </header>
+  <header class="top"><div class="nav"><div class="brand">z3r0_tr4c3</div><div class="test">Samsung A5 (2017) · TWRP WebUSB test</div></div></header>
+  <section class="hero"><div class="hero-inner"><div class="eyebrow">EXPERIMENTAL INSTALLER</div><h1>Install from Chrome.<br>Through TWRP.</h1><p>Тестов installer за Galaxy A5 (2017). Chrome се свързва към ADB в TWRP, проверява телефона, прехвърля build-а и може да стартира TWRP install само след отделно потвърждение.</p></div></section>
+  <main>
+    <div class="notice"><strong>⚠️ Това е UNTESTED build и тестов installer.</strong>Направи backup преди теста. Страницата не wipe-ва и не reboot-ва автоматично. Не използвай бутона Install, ако телефонът не е Galaxy A5 (2017) / <code>a5y17lte</code>.</div>
 
-  <main id="top">
-    <section class="hero shell">
-      <div class="hero-copy reveal">
-        <p class="eyebrow">PRIVACY-FOCUSED ANDROID</p>
-        <h1>Secure Android.<br><span>For hardware that still matters.</span></h1>
-        <p class="hero-lead">
-          z3r0_tr4c3 is built to give capable phones a secure second life with verified releases,
-          hardware-backed security where available, and a simple browser-based installer.
-        </p>
-        <div class="hero-actions">
-          <a class="button button-primary" href="#install">Start installation</a>
-          <a class="button button-link" href="#overview">Learn more <span aria-hidden="true">→</span></a>
-        </div>
-      </div>
-
-      <div class="hero-visual reveal" data-delay="120">
-        <div class="device-frame" aria-label="z3r0_tr4c3 device security preview">
-          <div class="device-glow"></div>
-          <div class="device-screen">
-            <div class="device-screen-top">
-              <span>z3r0_tr4c3</span>
-              <span class="mini-lock">LOCKED</span>
-            </div>
-            <div class="shield-mark" aria-hidden="true">
-              <svg viewBox="0 0 64 64"><path d="M32 5 52 13v16c0 13-8.4 24-20 30C20.4 53 12 42 12 29V13L32 5Z"/><path d="m23 32 6 6 13-15"/></svg>
-            </div>
-            <p>System verified</p>
-            <div class="security-list">
-              <div><span>Verified Boot</span><b>Active</b></div>
-              <div><span>Hardware keystore</span><b>Active</b></div>
-              <div><span>Recovery integrity</span><b>Verified</b></div>
-            </div>
-          </div>
-        </div>
+    <section class="panel">
+      <h2>1. Свържи TWRP</h2>
+      <p>Boot-ни телефона в TWRP и го свържи с USB. Не включвай „ADB Sideload“ — трябва да е нормалният ADB режим на TWRP.</p>
+      <div class="row-actions"><button id="connectBtn" class="primary">Connect TWRP</button></div>
+      <div class="device-card">
+        <div class="kv"><span>Състояние</span><strong id="connectionState">Не е свързан</strong></div>
+        <div class="kv"><span>Устройство</span><strong id="deviceName">—</strong></div>
+        <div class="kv"><span>Codename</span><strong id="deviceCode">—</strong></div>
+        <div class="kv"><span>TWRP</span><strong id="twrpState">—</strong></div>
       </div>
     </section>
 
-    <section id="overview" class="overview-section">
-      <div class="shell">
-        <div class="section-heading reveal">
-          <p class="eyebrow">BUILT AROUND TRUST</p>
-          <h2>Security you can actually see.</h2>
-          <p>Every supported device gets a security profile based on what its hardware and boot chain can really provide.</p>
-        </div>
+    <section class="panel">
+      <h2>2. Build от GitHub Release</h2>
+      <p>Release asset: <strong>android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip</strong></p>
+      <div class="kv"><span>Очакван SHA-256</span><strong class="hash">02690bb48d8796d1e935e4dee807909df8624dc285c58d8e6ee44ead33061283</strong></div>
+      <div class="steps" style="margin-top:16px">
+        <div class="step"><div class="step-left"><div class="num">1</div><div class="meta"><strong>Direct GitHub → TWRP</strong><small>Опитва streaming download директно от твоя GitHub Release.</small></div></div><button id="transferBtn" class="primary" disabled>Download & transfer</button></div>
+        <div class="step"><div class="step-left"><div class="num">2</div><div class="meta"><strong>Fallback: избери ZIP</strong><small>Ако GitHub блокира fetch/CORS, свали ZIP-а нормално и го избери тук.</small></div></div><label class="button secondary" id="pickLabel">Choose ZIP<input id="fileInput" type="file" accept=".zip,application/zip"></label></div>
+      </div>
+      <div id="progressWrap" class="progress-wrap"><div class="progress"><div id="progressBar" class="bar"></div></div><div class="progress-text"><span id="progressLabel">0%</span><span id="progressBytes">0 MB</span></div></div>
+    </section>
 
-        <div class="feature-grid">
-          <article class="feature-card reveal">
-            <span class="feature-number">01</span>
-            <h3>Verified boot chain</h3>
-            <p>Signed system images, integrity checks and safe bootloader relock only on devices where the trust model supports it.</p>
-          </article>
-          <article class="feature-card reveal" data-delay="70">
-            <span class="feature-number">02</span>
-            <h3>Hardware-backed security</h3>
-            <p>Use TEE, TrustZone, hardware-backed keystore and other secure hardware exposed by each supported phone.</p>
-          </article>
-          <article class="feature-card reveal" data-delay="140">
-            <span class="feature-number">03</span>
-            <h3>Sentinel recovery</h3>
-            <p>A hardened recovery designed for signed updates, integrity reporting, secure reset and device-specific checks.</p>
-          </article>
-        </div>
+    <section class="panel">
+      <h2>3. Проверка и инсталация</h2>
+      <p>След transfer-а проверяваме SHA-256 вътре в TWRP. Само при точен hash ще активираме Install.</p>
+      <div class="steps">
+        <div class="step"><div class="step-left"><div class="num">✓</div><div class="meta"><strong>Package integrity</strong><small id="verifyState">Няма прехвърлен файл.</small></div></div><button id="verifyBtn" class="secondary" disabled>Verify</button></div>
+        <div class="step"><div class="step-left"><div class="num">→</div><div class="meta"><strong>TWRP install</strong><small>Пуска <code>twrp install</code>. Не прави wipe и не reboot-ва.</small></div></div><button id="installBtn" class="danger" disabled>Install z3r0_tr4c3</button></div>
       </div>
     </section>
 
-    <section id="install" class="installer-section">
-      <div class="shell">
-        <div class="section-heading reveal">
-          <p class="eyebrow">WEB INSTALLER</p>
-          <h2>Four steps. Nothing hidden.</h2>
-          <p>The installer identifies the device, loads the right release, verifies it, and only then exposes the installation step.</p>
-        </div>
-
-        <div class="installer-window reveal">
-          <div class="installer-topbar">
-            <div>
-              <span class="installer-caption">z3r0_tr4c3 installer</span>
-              <strong id="panelTitle">Connect your phone</strong>
-            </div>
-            <div class="installer-state">
-              <span id="panelStatusOrb" class="status-orb"></span>
-              <span id="securityState">NOT CONNECTED</span>
-            </div>
-          </div>
-
-          <div class="step-strip" aria-label="Installation progress">
-            <div class="install-step active" data-step="1"><span>1</span><strong>Connect</strong></div>
-            <div class="step-line"><i id="progressLine"></i></div>
-            <div class="install-step" data-step="2"><span>2</span><strong>Release</strong></div>
-            <div class="step-line"><i></i></div>
-            <div class="install-step" data-step="3"><span>3</span><strong>Verify</strong></div>
-            <div class="step-line"><i></i></div>
-            <div class="install-step" data-step="4"><span>4</span><strong>Install</strong></div>
-          </div>
-
-          <div class="installer-content">
-            <div class="connect-panel">
-              <div class="connect-icon" aria-hidden="true">
-                <svg viewBox="0 0 48 48"><path d="M24 6v25m0-25-5 5m5-5 5 5M24 21H14v7m10-2h10v-7m-20 9a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm20-13a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM24 31a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg>
-              </div>
-              <div class="connect-copy">
-                <span class="panel-label">DEVICE</span>
-                <p id="deviceStatus">No device selected.</p>
-                <button id="connectBtn" class="button button-primary">Connect phone</button>
-              </div>
-            </div>
-
-            <div class="task-list">
-              <div class="task-row">
-                <div class="task-copy">
-                  <span class="task-index">01</span>
-                  <div><strong>Latest release</strong><small id="releaseStatus">Not loaded</small></div>
-                </div>
-                <button id="releaseBtn" class="button button-secondary button-small">Load</button>
-              </div>
-              <div class="task-row">
-                <div class="task-copy">
-                  <span class="task-index">02</span>
-                  <div><strong>Package integrity</strong><small id="verifyStatus">Waiting for release</small></div>
-                </div>
-                <button id="verifyBtn" class="button button-secondary button-small" disabled>Verify</button>
-              </div>
-              <div class="task-row task-disabled">
-                <div class="task-copy">
-                  <span class="task-index">03</span>
-                  <div><strong>Install z3r0_tr4c3</strong><small>Flashing backend is intentionally disabled in this prototype.</small></div>
-                </div>
-                <button id="installBtn" class="button button-secondary button-small" disabled>Install</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <p class="installer-note reveal">Use desktop Chrome or Edge over HTTPS. Only flash builds made for the exact device.</p>
-      </div>
-    </section>
-
-    <section id="devices" class="devices-section">
-      <div class="shell">
-        <div class="section-heading reveal">
-          <p class="eyebrow">REFERENCE DEVICES</p>
-          <h2>Starting small. Building properly.</h2>
-          <p>The first two devices are research platforms for the boot chain, recovery and hardware-backed security layer.</p>
-        </div>
-
-        <div class="device-grid">
-          <article class="device-card reveal">
-            <div class="device-card-top"><span>Samsung</span><span class="pill">Research</span></div>
-            <h3>Galaxy A5 (2017)</h3>
-            <p>Knox / TrustZone research, Samsung Download Mode backend and maximum usable hardware-backed security.</p>
-            <div class="device-meta"><span>a5y17lte</span><span>2017</span></div>
-          </article>
-          <article class="device-card reveal" data-delay="90">
-            <div class="device-card-top"><span>OnePlus</span><span class="pill">Research</span></div>
-            <h3>Nord N100</h3>
-            <p>Fastboot backend, AVB research and safe custom verified-boot / bootloader relock investigation.</p>
-            <div class="device-meta"><span>billie2</span><span>2020</span></div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="diagnostics-section shell reveal">
-      <details>
-        <summary>Installer diagnostics</summary>
-        <pre id="log">[z3r0] installer initialized\n[z3r0] waiting for device…</pre>
-      </details>
-    </section>
+    <section class="panel"><h2>Installer log</h2><pre id="log">[z3r0] Готов за тест.\n</pre></section>
+    <div class="footer">z3r0_tr4c3 · experimental TWRP installer</div>
   </main>
 
-  <footer class="site-footer">
-    <div class="shell footer-inner">
-      <div>
-        <strong>z3r0_tr4c3</strong>
-        <span>Secure Android for hardware worth keeping.</span>
-      </div>
-      <span>Prototype installer</span>
-    </div>
-  </footer>
+  <script type="module">
+    import { Adb, AdbDaemonTransport } from "https://esm.sh/@yume-chan/adb@2.0.0";
+    import AdbWebCredentialStore from "https://esm.sh/@yume-chan/adb-credential-web@2.0.0";
+    import { AdbDaemonWebUsbDeviceManager } from "https://esm.sh/@yume-chan/adb-daemon-webusb@2.0.0";
 
-  <script src="config.js"></script>
-  <script type="module" src="src/app.js"></script>
+    const ASSET_NAME = "android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip";
+    const ASSET_URL = "https://github.com/gpsn0w/z3r0_tr4c3_0s.img/releases/download/z3r0_tr4c3.img/" + ASSET_NAME;
+    const EXPECTED_SHA = "02690bb48d8796d1e935e4dee807909df8624dc285c58d8e6ee44ead33061283";
+    const REMOTE_PATH = "/sdcard/Download/" + ASSET_NAME;
+    const EXPECTED_SIZE = 597 * 1024 * 1024;
+
+    const $ = id => document.getElementById(id);
+    const logEl = $("log");
+    let adb = null;
+    let deviceValidated = false;
+    let transferred = false;
+    let verified = false;
+
+    function log(msg){ const t = new Date().toLocaleTimeString(); logEl.textContent += `[${t}] ${msg}\n`; logEl.scrollTop = logEl.scrollHeight; }
+    function text(bytes){ return typeof bytes === "string" ? bytes : new TextDecoder().decode(bytes || new Uint8Array()); }
+    async function shell(command){
+      if(!adb) throw new Error("Няма ADB връзка");
+      const result = await adb.subprocess.spawnAndWait(command);
+      const out = text(result.stdout).trim();
+      const err = text(result.stderr).trim();
+      if(err) log("stderr: " + err);
+      return out;
+    }
+    function setProgress(done,total){
+      $("progressWrap").style.display = "block";
+      const p = total ? Math.min(100, (done/total)*100) : 0;
+      $("progressBar").style.width = p.toFixed(1)+"%";
+      $("progressLabel").textContent = p.toFixed(1)+"%";
+      $("progressBytes").textContent = (done/1024/1024).toFixed(1) + " / " + (total/1024/1024).toFixed(1) + " MB";
+    }
+    function countedStream(stream,total){
+      const reader = stream.getReader(); let doneBytes = 0;
+      return new ReadableStream({
+        async pull(controller){
+          const {done,value} = await reader.read();
+          if(done){ controller.close(); return; }
+          doneBytes += value.byteLength; setProgress(doneBytes,total); controller.enqueue(value);
+        },
+        cancel(reason){ reader.cancel(reason); }
+      });
+    }
+
+    $("connectBtn").addEventListener("click", async () => {
+      try{
+        if(!window.isSecureContext) throw new Error("WebUSB изисква HTTPS. Качи страницата в GitHub Pages.");
+        const manager = AdbDaemonWebUsbDeviceManager.BROWSER;
+        if(!manager) throw new Error("Този браузър няма WebUSB. Използвай desktop Chrome/Edge.");
+        log("Отварям WebUSB device picker…");
+        const backend = await manager.requestDevice();
+        if(!backend){ log("Няма избрано устройство."); return; }
+        const connection = await backend.connect();
+        const credentialStore = new AdbWebCredentialStore();
+        const transport = await AdbDaemonTransport.authenticate({serial: backend.serial, connection, credentialStore});
+        adb = new Adb(transport);
+        $("connectionState").textContent = "Свързан";
+        $("connectionState").className = "ok";
+        log("ADB връзката е активна.");
+
+        const device = await shell("getprop ro.product.device");
+        const buildProduct = await shell("getprop ro.build.product");
+        const model = await shell("getprop ro.product.model");
+        let twrp = await shell("twrp --version 2>/dev/null || twrp -v 2>/dev/null || echo TWRP-present");
+        $("deviceName").textContent = model || "Unknown";
+        $("deviceCode").textContent = device || buildProduct || "Unknown";
+        $("twrpState").textContent = twrp || "Detected";
+
+        const code = (device + " " + buildProduct).toLowerCase();
+        const modelOk = /^sm-a520/i.test(model || "");
+        deviceValidated = code.includes("a5y17lte") || modelOk;
+        if(!deviceValidated){
+          $("deviceCode").className = "bad";
+          throw new Error(`Телефонът не изглежда като Galaxy A5 2017 (a5y17lte). Model=${model}, device=${device}`);
+        }
+        $("deviceCode").className = "ok";
+        $("transferBtn").disabled = false;
+        log(`Устройството е потвърдено: ${model} / ${device || buildProduct}`);
+        log("Можеш да започнеш transfer на build-а.");
+      }catch(e){ log("ERROR: " + e.message); $("connectionState").textContent = "Грешка"; $("connectionState").className = "bad"; console.error(e); }
+    });
+
+    async function pushStream(stream,total,label){
+      if(!adb || !deviceValidated) throw new Error("Първо свържи и потвърди Galaxy A5 2017.");
+      await shell("mkdir -p /sdcard/Download");
+      log(`Прехвърлям ${label} → ${REMOTE_PATH}`);
+      setProgress(0,total);
+      const sync = await adb.sync();
+      try{
+        await sync.write({ filename: REMOTE_PATH, file: countedStream(stream,total) });
+      } finally {
+        await sync.dispose();
+      }
+      transferred = true; verified = false;
+      $("verifyBtn").disabled = false; $("installBtn").disabled = true;
+      $("verifyState").textContent = "Файлът е прехвърлен. Нужно е SHA-256 verify.";
+      log("Transfer завърши. Следва SHA-256 проверка.");
+    }
+
+    $("transferBtn").addEventListener("click", async () => {
+      try{
+        log("Свалям build-а от GitHub Release като stream…");
+        const res = await fetch(ASSET_URL, {redirect:"follow"});
+        if(!res.ok || !res.body) throw new Error(`GitHub download failed (${res.status}). Използвай Choose ZIP fallback.`);
+        const len = Number(res.headers.get("content-length")) || EXPECTED_SIZE;
+        await pushStream(res.body,len,"GitHub Release");
+      }catch(e){ log("DIRECT DOWNLOAD ERROR: " + e.message); log("Fallback: свали ZIP-а от GitHub и използвай Choose ZIP."); console.error(e); }
+    });
+
+    $("fileInput").addEventListener("change", async (ev) => {
+      const file = ev.target.files?.[0]; if(!file) return;
+      try{
+        if(file.name !== ASSET_NAME) log(`Внимание: избраният файл е ${file.name}, очаквах ${ASSET_NAME}. Hash проверката ще реши дали е правилният.`);
+        await pushStream(file.stream(),file.size,file.name);
+      }catch(e){ log("FILE TRANSFER ERROR: " + e.message); console.error(e); }
+    });
+
+    $("verifyBtn").addEventListener("click", async () => {
+      try{
+        if(!transferred) throw new Error("Няма прехвърлен файл.");
+        log("Изчислявам SHA-256 в TWRP…");
+        const cmd = `sha256sum '${REMOTE_PATH}' 2>/dev/null || toybox sha256sum '${REMOTE_PATH}' 2>/dev/null || busybox sha256sum '${REMOTE_PATH}' 2>/dev/null`;
+        const out = await shell(cmd);
+        const got = (out.match(/[0-9a-fA-F]{64}/) || [""])[0].toLowerCase();
+        if(!got) throw new Error("TWRP няма достъпна sha256sum команда или файлът не се чете.");
+        log("SHA-256: " + got);
+        if(got !== EXPECTED_SHA){
+          verified=false; $("installBtn").disabled=true; $("verifyState").textContent="HASH НЕ СЪВПАДА — инсталацията е блокирана."; $("verifyState").className="bad";
+          throw new Error("SHA-256 mismatch. НЯМА да инсталираме този файл.");
+        }
+        verified=true; $("installBtn").disabled=false; $("verifyState").textContent="SHA-256 съвпада. Build-ът е точният GitHub asset."; $("verifyState").className="ok";
+        log("Hash verification PASSED. Install е отключен.");
+      }catch(e){ log("VERIFY ERROR: " + e.message); console.error(e); }
+    });
+
+    $("installBtn").addEventListener("click", async () => {
+      try{
+        if(!verified || !deviceValidated) throw new Error("Device/build verification не е минала.");
+        const answer = confirm("Това ще стартира TWRP install на UNTESTED z3r0_tr4c3 build. Направил ли си backup и искаш ли да продължиш?");
+        if(!answer){ log("Install cancelled."); return; }
+        $("installBtn").disabled=true;
+        log("Стартирам: twrp install " + REMOTE_PATH);
+        const out = await shell(`twrp install '${REMOTE_PATH}'`);
+        if(out) log("TWRP OUTPUT:\n" + out);
+        log("Командата приключи. Не reboot-вам автоматично — провери екрана на TWRP.");
+      }catch(e){ log("INSTALL ERROR: " + e.message); console.error(e); }
+      finally{ if(verified) $("installBtn").disabled=false; }
+    });
+
+    if(!("usb" in navigator)) log("WebUSB не е наличен. Използвай desktop Chrome/Edge.");
+    else if(!window.isSecureContext) log("Страницата не е HTTPS/secure context. WebUSB няма да работи.");
+    else log("WebUSB е наличен. Boot-ни A5 2017 в TWRP и натисни Connect TWRP.");
+  </script>
 </body>
 </html>
