@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#07090d" />
+  <meta name="description" content="z3r0_tr4c3 — защитен Android и уеб инсталатор" />
+  <title>z3r0_tr4c3 — Защитен Android</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="shell nav">
+      <a class="wordmark" href="#top" aria-label="z3r0_tr4c3 начало">
+        <span class="wordmark-dot" aria-hidden="true"></span>
+        <span>z3r0_tr4c3</span>
+      </a>
+      <nav class="nav-links" aria-label="Основна навигация">
+        <a href="#overview">Преглед</a>
+        <a href="#install">Инсталиране</a>
+        <a href="#devices">Устройства</a>
+        <a href="../" aria-label="English version">EN</a>
+      </nav>
+      <span id="browserBadge" class="badge neutral">Проверка на WebUSB…</span>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">ANDROID С ФОКУС ВЪРХУ ПОВЕРИТЕЛНОСТТА</p>
+        <h1>Защитен Android.<br><span>За хардуер, който още има значение.</span></h1>
+        <p class="hero-lead">
+          z3r0_tr4c3 е създаден, за да даде втори защитен живот на способни телефони чрез проверени версии,
+          хардуерно подсилена защита, когато е налична, и лесен инсталатор директно от браузъра.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#install">Започни инсталацията</a>
+          <a class="button button-link" href="#overview">Научи повече <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+
+      <div class="hero-visual reveal" data-delay="120">
+        <div class="device-frame" aria-label="Преглед на защитата на z3r0_tr4c3">
+          <div class="device-glow"></div>
+          <div class="device-screen">
+            <div class="device-screen-top">
+              <span>z3r0_tr4c3</span>
+              <span class="mini-lock">ЗАКЛЮЧЕН</span>
+            </div>
+            <div class="shield-mark" aria-hidden="true">
+              <svg viewBox="0 0 64 64"><path d="M32 5 52 13v16c0 13-8.4 24-20 30C20.4 53 12 42 12 29V13L32 5Z"/><path d="m23 32 6 6 13-15"/></svg>
+            </div>
+            <p>Системата е проверена</p>
+            <div class="security-list">
+              <div><span>Verified Boot</span><b>Активен</b></div>
+              <div><span>Хардуерен keystore</span><b>Активен</b></div>
+              <div><span>Цялост на recovery</span><b>Проверена</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="overview" class="overview-section">
+      <div class="shell">
+        <div class="section-heading reveal">
+          <p class="eyebrow">ИЗГРАДЕН ОКОЛО ДОВЕРИЕТО</p>
+          <h2>Защита, която можеш да видиш.</h2>
+          <p>Всяко поддържано устройство получава собствен профил според това, което хардуерът и boot веригата реално могат да осигурят.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card reveal">
+            <span class="feature-number">01</span>
+            <h3>Проверена boot верига</h3>
+            <p>Подписани системни образи, проверки за цялост и безопасно повторно заключване на bootloader-а само при устройства, чийто trust model го позволява.</p>
+          </article>
+          <article class="feature-card reveal" data-delay="70">
+            <span class="feature-number">02</span>
+            <h3>Хардуерно подсилена защита</h3>
+            <p>Използване на TEE, TrustZone, hardware-backed keystore и друг защитен хардуер, предоставен от конкретния телефон.</p>
+          </article>
+          <article class="feature-card reveal" data-delay="140">
+            <span class="feature-number">03</span>
+            <h3>Sentinel Recovery</h3>
+            <p>Защитено recovery за подписани актуализации, отчети за цялостта, сигурно изтриване и проверки според конкретното устройство.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="installer-section">
+      <div class="shell">
+        <div class="section-heading reveal">
+          <p class="eyebrow">УЕБ ИНСТАЛАТОР</p>
+          <h2>Четири стъпки. Нищо скрито.</h2>
+          <p>Инсталаторът разпознава устройството, зарежда правилната версия, проверява я и чак след това позволява инсталация.</p>
+        </div>
+
+        <div class="installer-window reveal">
+          <div class="installer-topbar">
+            <div>
+              <span class="installer-caption">z3r0_tr4c3 инсталатор</span>
+              <strong id="panelTitle">Свържи телефона си</strong>
+            </div>
+            <div class="installer-state">
+              <span id="panelStatusOrb" class="status-orb"></span>
+              <span id="securityState">НЯМА ВРЪЗКА</span>
+            </div>
+          </div>
+
+          <div class="step-strip" aria-label="Напредък на инсталацията">
+            <div class="install-step active" data-step="1"><span>1</span><strong>Свързване</strong></div>
+            <div class="step-line"><i id="progressLine"></i></div>
+            <div class="install-step" data-step="2"><span>2</span><strong>Версия</strong></div>
+            <div class="step-line"><i></i></div>
+            <div class="install-step" data-step="3"><span>3</span><strong>Проверка</strong></div>
+            <div class="step-line"><i></i></div>
+            <div class="install-step" data-step="4"><span>4</span><strong>Инсталиране</strong></div>
+          </div>
+
+          <div class="installer-content">
+            <div class="connect-panel">
+              <div class="connect-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48"><path d="M24 6v25m0-25-5 5m5-5 5 5M24 21H14v7m10-2h10v-7m-20 9a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm20-13a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM24 31a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg>
+              </div>
+              <div class="connect-copy">
+                <span class="panel-label">УСТРОЙСТВО</span>
+                <p id="deviceStatus">Няма избрано устройство.</p>
+                <button id="connectBtn" class="button button-primary">Свържи телефон</button>
+              </div>
+            </div>
+
+            <div class="task-list">
+              <div class="task-row">
+                <div class="task-copy">
+                  <span class="task-index">01</span>
+                  <div><strong>Последна версия</strong><small id="releaseStatus">Не е заредена</small></div>
+                </div>
+                <button id="releaseBtn" class="button button-secondary button-small">Зареди</button>
+              </div>
+              <div class="task-row">
+                <div class="task-copy">
+                  <span class="task-index">02</span>
+                  <div><strong>Цялост на пакета</strong><small id="verifyStatus">Изчаква версия</small></div>
+                </div>
+                <button id="verifyBtn" class="button button-secondary button-small" disabled>Провери</button>
+              </div>
+              <div class="task-row task-disabled">
+                <div class="task-copy">
+                  <span class="task-index">03</span>
+                  <div><strong>Инсталирай z3r0_tr4c3</strong><small>Flash backend-ът умишлено е изключен в този прототип.</small></div>
+                </div>
+                <button id="installBtn" class="button button-secondary button-small" disabled>Инсталирай</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="installer-note reveal">Използвай настолен Chrome или Edge през HTTPS. Flash-вай само build, предназначен точно за твоето устройство.</p>
+      </div>
+    </section>
+
+    <section id="devices" class="devices-section">
+      <div class="shell">
+        <div class="section-heading reveal">
+          <p class="eyebrow">РЕФЕРЕНТНИ УСТРОЙСТВА</p>
+          <h2>Започваме малко. Строим както трябва.</h2>
+          <p>Първите две устройства са тестови платформи за boot веригата, recovery и хардуерния слой за сигурност.</p>
+        </div>
+
+        <div class="device-grid">
+          <article class="device-card reveal">
+            <div class="device-card-top"><span>Samsung</span><span class="pill">Проучване</span></div>
+            <h3>Galaxy A5 (2017)</h3>
+            <p>Проучване на Knox / TrustZone, Samsung Download Mode backend и максимално използване на наличната хардуерна защита.</p>
+            <div class="device-meta"><span>a5y17lte</span><span>2017</span></div>
+          </article>
+          <article class="device-card reveal" data-delay="90">
+            <div class="device-card-top"><span>OnePlus</span><span class="pill">Проучване</span></div>
+            <h3>Nord N100</h3>
+            <p>Fastboot backend, AVB проучване и безопасно тестване на custom Verified Boot и повторно заключване на bootloader-а.</p>
+            <div class="device-meta"><span>billie2</span><span>2020</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="diagnostics-section shell reveal">
+      <details>
+        <summary>Диагностика на инсталатора</summary>
+        <pre id="log">[z3r0] инсталаторът е стартиран
+[z3r0] изчакване на устройство…</pre>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div>
+        <strong>z3r0_tr4c3</strong>
+        <span>Защитен Android за хардуер, който си струва да запазиш.</span>
+      </div>
+      <span>Прототипен инсталатор</span>
+    </div>
+  </footer>
+
+  <script src="../config.js"></script>
+  <script type="module" src="../src/app-bg.js"></script>
+</body>
+</html>
