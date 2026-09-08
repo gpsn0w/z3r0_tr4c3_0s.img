@@ -41,7 +41,7 @@ pre{background:#0c0e12;color:#d5dbe5;border-radius:16px;padding:15px;max-height:
 
 <section class="card">
 <h2>2. Инсталирай z3r0_tr4c3</h2>
-<p>Един бутон. Installer-ът сам прави: Worker → Chrome → TWRP → SHA-256 → TWRP install.</p>
+<p>Един бутон. Installer-ът сам прави: GitHub Release → Chrome → TWRP → SHA-256 → TWRP install.</p>
 <div class="small">SHA-256: 02690bb48d8796d1e935e4dee807909df8624dc285c58d8e6ee44ead33061283</div>
 <div class="actions"><button id="installBtn" class="dark" disabled>Install z3r0_tr4c3</button></div>
 <div id="progressWrap" class="progressWrap"><div class="progress"><div id="bar" class="bar"></div></div><div class="prog"><span id="stage">Готов</span><span id="progressText">0%</span></div></div>
@@ -53,8 +53,8 @@ pre{background:#0c0e12;color:#d5dbe5;border-radius:16px;padding:15px;max-height:
 (()=>{"use strict";
 const EXPECTED_SHA="02690bb48d8796d1e935e4dee807909df8624dc285c58d8e6ee44ead33061283";
 const REMOTE_PATH="/sdcard/Download/z3r0_tr4c3-a5y17lte-test.zip";
-// CHANGE ONLY THIS after deploying worker.js:
-const WORKER_ASSET_URL="https://YOUR-WORKER.workers.dev/z3r0-a5.zip";
+const RELEASE_API="https://api.github.com/repos/gpsn0w/z3r0_tr4c3_0s.img/releases/tags/z3r0_tr4c3.img";
+const RELEASE_ASSET_NAME="android-11-a57y17lte-personal-bg-v0.4-UNTESTED.zip";
 const $=id=>document.getElementById(id);let libs,adb,transport,ready=false,busy=false;
 const log=m=>{const t=new Date().toLocaleTimeString();$("log").textContent+=`[${t}] ${m}\n`;$("log").scrollTop=$("log").scrollHeight};
 const state=(id,text,cls="")=>{const e=$(id);e.textContent=text;e.className=cls};
@@ -70,8 +70,32 @@ async function syncWrite(path,readable){const s=await adb.sync();try{await s.wri
 async function connect(){if(busy)return;busy=true;$("connectBtn").disabled=true;try{if(!window.isSecureContext)throw new Error("Отвори през HTTPS");if(!navigator.usb)throw new Error("Няма WebUSB");log("Отварям Chrome USB picker…");const raw=await navigator.usb.requestDevice({filters:[{vendorId:0x04e8},{classCode:0xff,subclassCode:0x42,protocolCode:0x01}]});await loadLibs();const manager=libs.Manager.BROWSER||new libs.Manager(navigator.usb);const devices=await manager.getDevices();const backend=devices.find(d=>d.raw===raw)||devices.find(d=>d.raw?.serialNumber===raw.serialNumber)||devices[0];if(!backend)throw new Error("ADB интерфейсът не е намерен");const connection=await backend.connect();transport=await libs.Transport.authenticate({serial:backend.serial||raw.serialNumber||"z3r0",connection,credentialStore:new libs.Cred("z3r0_tr4c3")});adb=new libs.Adb(transport);state("adb","Свързан","ok");const model=await shell("getprop ro.product.model");const dev=await shell("getprop ro.product.device");const combo=(model+" "+dev).toLowerCase();if(!(combo.includes("sm-a520")||combo.includes("a5y17lte")))throw new Error(`Грешно устройство: ${model} / ${dev}`);state("device",`${model} / ${dev}`,"ok");let tv=await shell("getprop ro.twrp.version");if(!tv)tv=await shell("twrp --version 2>/dev/null || echo detected");state("twrp",tv||"Detected","ok");ready=true;$("installBtn").disabled=false;$("disconnectBtn").disabled=false;log("DEVICE READY. Install е отключен.")}
 catch(e){console.error(e);state("adb","Грешка","bad");log("CONNECT ERROR: "+err(e))}finally{busy=false;$("connectBtn").disabled=false}}
 function progressStream(stream,total){const reader=stream.getReader();let n=0;return new ReadableStream({async pull(controller){const r=await reader.read();if(r.done){controller.close();return}n+=r.value.byteLength;const p=total?Math.min(100,n/total*100):0;$("bar").style.width=p+"%";$("progressText").textContent=p.toFixed(1)+"%";controller.enqueue(r.value)},cancel(reason){reader.cancel(reason)}})}
-async function install(){if(!ready||busy)return;if(WORKER_ASSET_URL.includes("YOUR-WORKER")){alert("Първо сложи workers.dev адреса в index.html. В ZIP-а има worker.js.");return}if(!confirm("Ще flash-не UNTESTED build през TWRP. Продължаваме ли?"))return;busy=true;$("installBtn").disabled=true;$("progressWrap").style.display="block";try{$("stage").textContent="Отварям build…";log("Отварям streaming endpoint…");const r=await fetch(WORKER_ASSET_URL,{cache:"no-store"});if(!r.ok||!r.body)throw new Error(`Build stream HTTP ${r.status}`);const workerSha=(r.headers.get("x-z3r0-sha256")||"").toLowerCase();if(workerSha&&workerSha!==EXPECTED_SHA)throw new Error("Worker SHA metadata mismatch");const total=Number(r.headers.get("content-length")||0);await shell("mkdir -p /sdcard/Download");$("stage").textContent="Качвам към TWRP…";log("STREAM: GitHub → Worker → Chrome → TWRP");await syncWrite(REMOTE_PATH,progressStream(r.body,total));$("stage").textContent="Проверявам SHA-256…";log("Проверявам SHA-256 на телефона…");const out=await shell(`sha256sum '${REMOTE_PATH}' 2>/dev/null || toybox sha256sum '${REMOTE_PATH}' 2>/dev/null || busybox sha256sum '${REMOTE_PATH}' 2>/dev/null`);const got=(out.match(/[0-9a-fA-F]{64}/)||[""])[0].toLowerCase();if(got!==EXPECTED_SHA)throw new Error(`SHA-256 mismatch: ${got||"няма hash"}`);log("SHA-256 VERIFIED.");$("stage").textContent="Инсталирам…";log("Стартирам TWRP install…");const out2=await shell(`twrp install '${REMOTE_PATH}'`);if(out2)log(out2);$("stage").textContent="Готово";$("progressText").textContent="100%";$("bar").style.width="100%";log("INSTALL FINISHED. Не reboot-вам автоматично.")}
-catch(e){console.error(e);$("stage").textContent="Грешка";log("INSTALL ERROR: "+err(e))}finally{busy=false;$("installBtn").disabled=!ready}}
+async function install(){if(!ready||busy)return;if(!confirm("Ще flash-не UNTESTED build през TWRP. Продължаваме ли?"))return;busy=true;$("installBtn").disabled=true;$("progressWrap").style.display="block";try{
+$("stage").textContent="Проверявам Release…";log("Чета GitHub Release metadata…");
+const metaRes=await fetch(RELEASE_API,{headers:{"Accept":"application/vnd.github+json"},cache:"no-store"});
+if(!metaRes.ok)throw new Error(`GitHub Release API HTTP ${metaRes.status}`);
+const release=await metaRes.json();
+const asset=(release.assets||[]).find(a=>a.name===RELEASE_ASSET_NAME);
+if(!asset)throw new Error(`Release asset не е намерен: ${RELEASE_ASSET_NAME}`);
+const digest=(asset.digest||"").toLowerCase();
+if(digest&&digest!==`sha256:${EXPECTED_SHA}`)throw new Error(`GitHub digest mismatch: ${digest}`);
+log(`Release asset: ${asset.name} (${(asset.size/1024/1024).toFixed(1)} MB)`);
+$("stage").textContent="Отварям build…";log("Стриймвам директно от GitHub Release…");
+const r=await fetch(asset.browser_download_url,{cache:"no-store",redirect:"follow"});
+if(!r.ok||!r.body)throw new Error(`GitHub asset HTTP ${r.status}`);
+const total=Number(asset.size||r.headers.get("content-length")||0);
+await shell("mkdir -p /sdcard/Download");
+$("stage").textContent="Качвам към TWRP…";log("STREAM: GitHub Release → Chrome → TWRP");
+await syncWrite(REMOTE_PATH,progressStream(r.body,total));
+$("stage").textContent="Проверявам SHA-256…";log("Проверявам SHA-256 на телефона…");
+const out=await shell(`sha256sum '${REMOTE_PATH}' 2>/dev/null || toybox sha256sum '${REMOTE_PATH}' 2>/dev/null || busybox sha256sum '${REMOTE_PATH}' 2>/dev/null`);
+const got=(out.match(/[0-9a-fA-F]{64}/)||[""])[0].toLowerCase();
+if(got!==EXPECTED_SHA)throw new Error(`SHA-256 mismatch: ${got||"няма hash"}`);
+log("SHA-256 VERIFIED.");
+$("stage").textContent="Инсталирам…";log("Стартирам TWRP install…");
+const out2=await shell(`twrp install '${REMOTE_PATH}'`);if(out2)log(out2);
+$("stage").textContent="Готово";$("progressText").textContent="100%";$("bar").style.width="100%";log("INSTALL FINISHED. Не reboot-вам автоматично.")
+}catch(e){console.error(e);$("stage").textContent="Грешка";log("INSTALL ERROR: "+err(e))}finally{busy=false;$("installBtn").disabled=!ready}}
 $("connectBtn").addEventListener("click",connect);$("installBtn").addEventListener("click",install);$("disconnectBtn").addEventListener("click",async()=>{try{await transport?.close?.()}catch{}adb=null;transport=null;ready=false;$("installBtn").disabled=true;$("disconnectBtn").disabled=true;state("adb","Не е свързан");log("Disconnected.")});
 if(!window.isSecureContext){state("webusb","Нужен е HTTPS","bad")}else if(!navigator.usb){state("webusb","Няма WebUSB","bad")}else{state("webusb","Готов","ok")}
 })();
